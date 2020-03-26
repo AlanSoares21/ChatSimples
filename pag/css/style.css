@@ -1,0 +1,8 @@
+.caixaMenssagens{
+  height: 400px;
+  max-height: 400px;
+  width: 100%;
+
+  background-color: #778899;
+  overflow: auto;
+}

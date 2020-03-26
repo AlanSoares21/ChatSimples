@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css">
+  </head>
+  <body class="text-light bg-dark">
+    <div class="container ">
+
+      <!-- inicio do navbar //// sticky-top ///// fixed-top -->
+      <nav class="navbar  sticky-top   navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#"> Chat <i data-feather="message-circle"></i> </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="https://github.com/AlanSoares21/ChatSimples"> GitHub <i data-feather="github"></i> <span class="sr-only">(current)</span></a>
+            </li>
+          </ul>
+          <form class="form-inline my-2 my-lg-0 " id="nome">
+            <input type="text" id="txtNome" class="form-control mr-sm-2" placeholder="insira seu nome" value="">
+            <button id="btnNome" class="btn btn-outline-success my-2 my-sm-0" type="submit">Entrar</button>
+          </form>
+          <div class="col form-inline ">
+            <input type="text" id="txtSala" class="form-control mr-sm-2" placeholder="insira a sala que deseja participar" >
+            <button id="btnSala" class="btn btn-outline-success my-2 my-sm-0" type="submit">Entrar na sala</button>
+          </div>
+
+        </div>
+      </nav>
+      <!-- fim do navbar -->
+
+      <!-- salas de conversa abertas -->
+      <div id="divSalas" class="row m-4 bg-secondary border border-secondary rounded p-2">
+
+      </div>
+
+      <div class="container-sm bg-light bg-dark">
+        <!-- caixa de menssagens -->
+        <div class="row bg-secondary" >
+
+          <div id="divMenssagens" class="caixaMenssagens" >
+
+            <div class="alert alert-primary" role="alert">
+                A simple primary alert—check it out!
+            </div>
+
+            <div class="alert alert-success" role="alert">
+              A simple success alert—check it out!
+            </div>
+
+          </div>
+
+          <div class="input-group">
+            <textarea id="txtMenssagem" class="form-control " aria-label="With textarea"></textarea>
+            <div class="input-group-prepend">
+                <button id="btnEnviarMenssagem" class="btn btn-success">Enviar</button>
+            </div>
+
+          </div>
+
+        </div>
+        <!-- fim da caixa de menssagens -->
+
+      </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js"></script>
+    <script type="text/javascript">
+      feather.replace();
+      $(function (){
+          var socket;
+
+          $('#nome').submit(function(e){
+
+            e.preventDefault();
+
+            socket = io();
+
+            sessionStorage.setItem('name',$('#txtNome').val());
+            $('#txtNome').attr('disabled','');
+            $('#btnNome').attr('disabled','');
+
+            socket.emit('Nome usuario',sessionStorage.getItem('name'));
+
+            socket.on('notificacao',function(dado){
+              alert("notificação "+dado);
+            });
+            socket.on('novo usuario',function(dado){
+              var ul = $('#'+dado.name.replace(" ",""));
+              addUsuario(ul,dado.users[(dado.users.length-1)],dado.name);
+            });
+
+            socket.on('usuario desconectou',function(dado,user){
+              $('#'+user.id+""+dado.name.replace(" ","")).remove();
+              alert("O usuario "+user.name+" se desconectou da conversa "+dado.name);
+            });
+
+            socket.on('usuariosOn',function(dado){
+              novaSala(dado);
+            });
+
+            socket.on('menssagem',function(men,user){//men <= menssagem
+              console.log(" menssagem chegou: "+men)
+              var div = $('#divMenssagens');
+              /*
+              <div class="alert alert-primary" role="alert">
+                  A simple primary alert—check it out!
+              </div>
+              */
+              var m = $('<div />');
+              m.addClass("alert alert-primary");
+              m.attr('role','alert');
+              m.html(user.name+": "+men);
+              div.append(m)
+            });
+
+          });
+
+          $('#btnSala').click(function (e) {
+            socket.emit('sala',$('#txtSala').val());
+            $('#txtSala').val('');
+          });
+          $('#btnEnviarMenssagem').click(function (e) {
+            console.log(sessionStorage.getItem('sala'))
+            console.log($('#txtMenssagem').val())
+            socket.emit('menssagem',$('#txtMenssagem').val(),sessionStorage.getItem('sala'));
+
+
+            //inserindo sua menssagem
+            var div = $('#divMenssagens');
+            /*
+            <div class="alert alert-primary" role="alert">
+                A simple primary alert—check it out!
+            </div>
+            */
+            var m = $('<div />');
+            m.addClass("alert alert-success");
+            m.attr('role','alert');
+            m.html(sessionStorage.getItem('name')+": "+$('#txtMenssagem').val());
+            div.append(m);
+            $('#txtMenssagem').val('');
+          });
+
+      });
+
+    </script>
+  </body>
+</html>
