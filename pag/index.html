@@ -119,20 +119,7 @@
               novaSala(dado);
             });
 
-            socket.on('menssagem',function(men,user){//men <= menssagem
-              console.log(" menssagem chegou: "+men)
-              var div = $('#divMenssagens');
-              /*
-              <div class="alert alert-primary" role="alert">
-                  A simple primary alert—check it out!
-              </div>
-              */
-              var m = $('<div />');
-              m.addClass("alert alert-primary");
-              m.attr('role','alert');
-              m.html(user.name+": "+men);
-              div.append(m)
-            });
+            socket.on('menssagem',novaMenssagem);
 
           });
 
@@ -140,25 +127,19 @@
             socket.emit('sala',$('#txtSala').val());
             $('#txtSala').val('');
           });
+
           $('#btnEnviarMenssagem').click(function (e) {
-            console.log(sessionStorage.getItem('sala'))
-            console.log($('#txtMenssagem').val())
             socket.emit('menssagem',$('#txtMenssagem').val(),sessionStorage.getItem('sala'));
-
-
             //inserindo sua menssagem
             var div = $('#divMenssagens');
-            /*
-            <div class="alert alert-primary" role="alert">
-                A simple primary alert—check it out!
-            </div>
-            */
-            var m = $('<div />');
-            m.addClass("alert alert-success");
-            m.attr('role','alert');
-            m.html(sessionStorage.getItem('name')+": "+$('#txtMenssagem').val());
-            div.append(m);
+            var menssagem = { texto : $('#txtMenssagem').val() , enviado : {
+              name : sessionStorage.getItem('name'), id : socket.id
+            } }
+            let idxSala = salas.findIndex( obj => obj.name == sessionStorage.getItem('sala') );
+            salas[idxSala].menssagens.push(menssagem);
             $('#txtMenssagem').val('');
+            minhasMenssagens(div,menssagem);
+
           });
 
       });

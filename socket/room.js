@@ -9,9 +9,10 @@ module.exports = {
     usersOn{ socket.id => { id : socket.id , name : nomeUsuario } }
 
     salas = [
-    { name : 'nomeSala1', users: [ user1 , user2 ]},
-    { name : 'nomeSala2', users: [ user1 , user2 ]},
-    { name : 'nomeSala3', users: [ user1 , user2 ]},
+      { name : 'nomeSala1',
+        menssagens:[ { texto: "texto1", id : user.id }, { texto: "texto2", id : user.id }  ] ,
+        users: [ user1 , user2 ]
+      },
    ]
     */
 
@@ -41,15 +42,21 @@ module.exports = {
           }else{//sala não existe
 
             let user = usersOn[ socket.id ];
-            sala = { name : nomeSala, users : [ user ] };
+            sala = { name : nomeSala, menssagens: [ { texto : "Criado hoje", id : user.id} ], users : [ user ] };
             salas.push(sala);
             socket.emit('usuariosOn',sala);
           }
       });
 
-      socket.on('menssagem',(m,sala)=>{// @m => menssagem enviada; @sala => nome da sala onde vamos transmitir a menssagem
+      socket.on('menssagem',(m,nomeSala)=>{// @m => menssagem enviada; @nomeSala => nome da sala onde vamos transmitir a menssagem
         let user = usersOn[ socket.id ];
-        socket.broadcast.to(sala).emit('menssagem',m,user);
+
+        //guardando a menssagem enviada no objeto salas.sala
+        let sala = salas[ salas.findIndex( obj => obj.name == nomeSala )];
+        let menssagem = { texto : m, enviado : user };
+        sala.menssagens.push(menssagem);
+        //enviando a menssagem para os usuarios
+        socket.broadcast.to(nomeSala).emit('menssagem',menssagem,nomeSala);
       });
 
 
