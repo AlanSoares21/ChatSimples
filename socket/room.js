@@ -10,7 +10,7 @@ module.exports = {
 
     salas = [
       { name : 'nomeSala1',
-        menssagens:[ { texto: "texto1", id : user.id }, { texto: "texto2", id : user.id }  ] ,
+        menssagens:[ { texto: "texto1", enviado : { id : user.id name : user.name } }  ] ,
         users: [ user1 , user2 ]
       },
    ]
@@ -28,30 +28,35 @@ module.exports = {
 
       // conecta o usuario a sala que deseja entrar; @nomeSala => string
       socket.on('sala',(nomeSala)=>{
-          socket.join(nomeSala);//conecta socket a sala ela existindo ou não
-          let idxSala = salas.findIndex( sala => sala.name == nomeSala);//index da sala, inxSala = -1 se a sala não foi criada
-          if(idxSala != -1){//sala existe
-            let idxUser = salas[idxSala].users.findIndex( user => user.id == socket.id);//index do usuario
+          socket.join(nomeSala);
+          //index da sala, inxSala = -1 se a sala não foi criada
+          let idxSala = salas.findIndex( sala => sala.name == nomeSala);
+
+          if(idxSala == -1){
+            const user = usersOn[ socket.id ];
+            sala = { name : nomeSala, menssagens: [ { texto : "Criado hoje", enviado:{ id : user.id , name : "Sistema"}} ], users : [ user ] };
+            salas.push(sala);
+            socket.emit('usuariosOn',sala);
+          }else{
+            let idxUser = salas[idxSala].users.findIndex( user => user.id == socket.id);
             if(idxUser == -1){
               //adiciona o usuario ao array salas
               salas[idxSala].users.push( usersOn[ socket.id ] );
             }
             socket.emit('usuariosOn',salas[idxSala]);//eniva dados da sala para quem se conectou
             socket.broadcast.to(nomeSala).emit('novo usuario',salas[idxSala]);//informa novo usuario para a sala
-
-          }else{//sala não existe
-
-            let user = usersOn[ socket.id ];
-            sala = { name : nomeSala, menssagens: [ { texto : "Criado hoje", id : user.id} ], users : [ user ] };
-            salas.push(sala);
-            socket.emit('usuariosOn',sala);
           }
+
       });
 
-      socket.on('menssagem',(m,nomeSala)=>{// @m => menssagem enviada; @nomeSala => nome da sala onde vamos transmitir a menssagem
+      socket.on('menssagem',(m,nomeSala)=>{
+        /*
+         @m => menssagem enviada;
+         @nomeSala => nome da sala onde vamos transmitir a menssagem
+        */
         let user = usersOn[ socket.id ];
 
-        //guardando a menssagem enviada no objeto salas.sala
+        //guardando a menssagem enviada no array salas.sala.menssagens
         let sala = salas[ salas.findIndex( obj => obj.name == nomeSala )];
         let menssagem = { texto : m, enviado : user };
         sala.menssagens.push(menssagem);
