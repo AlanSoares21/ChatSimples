@@ -97,11 +97,12 @@
             socket = io();
 
             sessionStorage.setItem('name',$('#txtNome').val());
+            sessionStorage.setItem('id',socket.id);
             $('#txtNome').attr('disabled','');
             $('#btnNome').attr('disabled','');
 
             socket.emit('Nome usuario',sessionStorage.getItem('name'));
-
+            
             socket.on('notificacao',function(dado){
               alert("notificação "+dado);
             });
@@ -133,7 +134,7 @@
             //inserindo sua menssagem
             var div = $('#divMenssagens');
             var menssagem = { texto : $('#txtMenssagem').val() , enviado : {
-              name : sessionStorage.getItem('name'), id : socket.id
+              name : sessionStorage.getItem('name'), id : sessionStorage.getItem('id')
             } }
             let idxSala = salas.findIndex( obj => obj.name == sessionStorage.getItem('sala') );
             salas[idxSala].menssagens.push(menssagem);

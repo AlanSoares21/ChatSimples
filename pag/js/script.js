@@ -1,13 +1,13 @@
 var salas = [];//salas que o usuario se conectou
-
-function novaSala(sala) {
-  /*
+/*
   sala = { name : "nome da sala" ,
-  users = [
-  {id : id1 , name : "nome1"},
-  {id : id2 , name : "nome2"},
-]}
-  */
+    users = [
+      {id : id1 , name : "nome1"},
+      {id : id2 , name : "nome2"},
+    ]
+  }
+*/
+function novaSala(sala) {
     salas.push(sala);
     mostraNovaSala(sala.name,sala.users);
 }
@@ -38,13 +38,13 @@ function mostraNovaSala(nomeSala,membros) {
   nvSala.append(ul);
 
   nvSala.click((e)=>{
+    $('#divMenssagens').html('');
     sessionStorage.setItem('sala',$('#'+nomeSala.replace(" ","")).attr('value'));
     //mostra menssagens
-    var menssagem = salas[ salas.findIndex(obj => obj.name == $('#'+nomeSala.replace(" ","")).attr('value'))].menssagens;
-    for (var men of menssagem) {
-      
-    }
-    $('#divMenssagens').html('');
+    var  menssagens  = salas[ salas.findIndex(obj => obj.name == $('#'+nomeSala.replace(" ","")).attr('value'))].menssagens;
+    console.log(menssagens);
+    mostraMenssagens($('#divMenssagens'),menssagens);
+
   });
 
   $('#divSalas').append(nvSala);
@@ -52,6 +52,9 @@ function mostraNovaSala(nomeSala,membros) {
   sessionStorage.setItem('sala',nomeSala)
   //mostraMenssagens
   $('#divMenssagens').html('');
+  var  menssagens  = salas[ salas.findIndex(obj => obj.name == $('#'+nomeSala.replace(" ","")).attr('value'))].menssagens;
+  console.log(menssagens);
+  mostraMenssagens($('#divMenssagens'),menssagens);
 }
 
 function addUsuario(elmt,user,nomeSala) {
@@ -100,4 +103,20 @@ function outrasMenssagens(div,men) {//adiciona menssagem de outra pessoa no chat
   m.attr('role','alert');
   m.html(men.enviado.name+": "+men.texto);
   div.append(m);
+}
+
+function mostraMenssagens(div,menssagens) {
+  /*
+    @div => div onde as menssagens serão inseridas
+    @menssagens => array com as menssagens que serão tratadas
+  */
+  menssagens.forEach((men) => {
+    console.log(men);
+    if(men.enviado.id == sessionStorage.getItem('id')){
+      minhasMenssagens(div,men);
+    }else{
+      outrasMenssagens(div,men);
+    }
+  });
+
 }
